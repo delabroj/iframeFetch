@@ -1,0 +1,27 @@
+<script>
+function getSecureMessage(e) {
+  const appOrigin = document.referrer.substring(0, document.referrer.indexOf('/', 8));
+
+  const username = encodeURIComponent(e.data);
+  fetch('http://localhost:8080/securemessage?app-origin=' + appOrigin + '&username=' + username, {
+    method: 'get',
+    credentials: 'same-origin',
+  })
+    .then(function(response) {
+      const contentType = response.headers.get('Content-Type');
+      if (!contentType.startsWith('application/json')) {
+        throw new Error('unexpected content');
+      }
+      return response.json();
+    })
+    .then(function(json) {
+      parent.postMessage(JSON.stringify(json), appOrigin);
+    })
+    .catch(function(err) {
+      parent.postMessage(JSON.stringify({ error: err.message }), appOrigin);
+    });
+}
+
+// wait for a message from the parent window
+window.addEventListener('message', getSecureMessage, false);
+</script>

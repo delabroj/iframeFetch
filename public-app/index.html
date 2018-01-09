@@ -1,0 +1,31 @@
+<body>
+  <script>
+  var apiIframe;
+
+function messageHandler(event) {
+  // remove the event listener
+  window.removeEventListener('message', messageHandler, false);
+
+  // only accept messages from the api's domain
+  if (event.origin !== 'http://localhost:8080' || event.source !== apiIframe.contentWindow) return;
+
+  document.getElementById('test').innerHTML += '<p>message received from api: ' + event.data + '</p>';
+}
+
+function getApiMessage() {
+  window.addEventListener('message', messageHandler, false);
+
+  // notify the iframe that we would like to see the secure message
+  apiIframe = document.getElementById('api_iframe');
+  const username = document.getElementById('username').value;
+  apiIframe.contentWindow.postMessage(username, '*');
+}
+</script>
+
+  <label>Username: <input id="username" /></label> (must be 'user1@example.com')<br />
+  <button onclick="getApiMessage();">get api message</button> |
+  <a href="http://localhost:8080/setcookie" target="blank">login (set cookie on api's domain)</a> |
+  <a href="http://localhost:8080/expirecookie" target="blank">logout (expire cookie)</a>
+  <br /><br /><div id="test"></div>
+  <iframe id="api_iframe" sandbox="allow-scripts allow-same-origin" style="width:0;height:0;border:none;" src="http://localhost:8080/iframe.html"></iframe>
+</body>
